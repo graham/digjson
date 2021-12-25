@@ -22,14 +22,20 @@ func inner_dig(obj map[string]interface{}, rest string) (interface{}, bool) {
 		return nil, false
 	}
 
+	// Is the value we found a {} or some other type.
 	unboxed, ok := hit.(map[string]interface{})
 
 	if !ok || len(chunks) == 1 {
+		// If we didn't find a {} or we are out of path chunks
+		// return what we have.
 		return hit, true
 	} else {
+		// Otherwise keep digging!
 		return inner_dig(unboxed, chunks[1])
 	}
 
+	// Tthe field we requested doesnt exist
+	// stop digging and return nil
 	return nil, false
 
 }
@@ -48,6 +54,9 @@ func TransferMapToStruct(data map[string]interface{}, target interface{}) error 
 		dValue, found := data[key]
 
 		if !found {
+			// Ignore struct fields if the json
+			// object we are looking at doesn't have
+			// that key.
 			continue
 		}
 
@@ -55,13 +64,22 @@ func TransferMapToStruct(data map[string]interface{}, target interface{}) error 
 		result := tVal.Elem().Field(i)
 		dType := reflect.TypeOf(dValue)
 
+		// If the kinds are the same, no conversion is needed
+		// This is likely a direct memory copy.
 		if dType.Kind() == kind {
 			result.Set(reflect.ValueOf(dValue))
-		} else {
-			convertedValue := reflect.ValueOf(dValue).Convert(field.Type)
-			result.Set(convertedValue)
-			return nil
+			continue
 		}
+
+		// If the kinds differ and Reflect cannot convert them for us,
+		// bail out.
+		if reflect.TypeOf(dValue).ConvertibleTo(field.Type) == false {
+			return errors.New(fmt.Sprintf("cant convert %s to %s", reflect.ValueOf(dValue), field.Type))
+		}
+
+		// This should use transmute_value_to_target todo(graham)
+		convertedValue := reflect.ValueOf(dValue).Convert(field.Type)
+		result.Set(convertedValue)
 	}
 
 	return nil
@@ -167,6 +185,9 @@ func dig(payload []byte, path string, target interface{}, isStrict bool) (bool, 
 			toType := reflect.TypeOf(target).Elem()
 
 			if fromType.ConvertibleTo(toType) {
+				// Easy conversion by the reflect module, likely more reliable as well.
+				// This covers most of the int32 -> int64 or other safe operations.
+				// I'm not sure how this handles overflow situations.
 				newval := reflect.ValueOf(newval).Convert(toType)
 				indr.Set(reflect.Indirect(newval))
 				return was_found, nil
@@ -185,10 +206,35 @@ func dig(payload []byte, path string, target interface{}, isStrict bool) (bool, 
 				return was_found, nil
 			}
 
-			return was_found, errors.New(fmt.Sprintf("Can't convert %s to %s yet.", fromType, toType))
+			err := transmute_value_to_target(fromType.Kind(), toType.Kind(), newval, &indr)
+
+			if err != nil {
+				return was_found, err
+			}
+
+			return was_found, nil
 
 		}
 	}
 
 	return was_found, err
+}
+
+// I understand why this function will ruffle some feathers, changing values without the
+// engineer being involved seems weird. That said, the source data is of one type,
+// and the target struct likely is the datatype the engineer will want, we might as well
+// make their life easier. It's a cost, but one I don't think is unreasonable.
+func transmute_value_to_target(fromKind reflect.Kind, toKind reflect.Kind, source interface{}, target *reflect.Value) error {
+	if fromKind == reflect.String && toKind == reflect.Int {
+		intValue, err := strconv.ParseInt(source.(string), 10, 64)
+		if err != nil {
+			return err
+		}
+		target.SetInt(intValue)
+		return nil
+	} else if fromKind == reflect.Int && toKind == reflect.String {
+		target.SetString(fmt.Sprintf("%d", source.(int64)))
+	}
+
+	return errors.New(fmt.Sprintf("Transmute from %s to %s not supported yet.", fromKind, toKind))
 }
