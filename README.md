@@ -58,7 +58,7 @@ jsondata_with_nil = { "user": null }
 jsondata_with_array = { "user": [{ "username": "user1"}, {"username": "user2"} ] }
 ```
 
-This is very hard to deal with, because during the decode, you don't know what the type will be, You can choose to decode to `map[string]interface{}` but this is very cumbersome with large Json Documents.
+This is very hard to deal with, because during the decode, you don't know what the type will be, You can choose to decode to `map[string]interface{}` but this is very cumbersome with deep Json Documents.
 
 Dig assumes you want the datatype you're giving it, if it's a list, and there is only a object, it will wrap it in a list (one item), if there is a null, you'll get back a empty list. It's easier if i just show you.
 
