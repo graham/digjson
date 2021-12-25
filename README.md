@@ -24,12 +24,12 @@ To start, the JSON looks like this:
 
 ```
 jsondata = { "user": { "username: "user1" } }
-```json
+```
 
 ```
 var u []string
 was_found, err := Dig(jsondata, "user.username", &u)
-```go
+```
 
 The value "user1" is now in `u`.
 
@@ -38,7 +38,7 @@ The value "user1" is now in `u`.
 
 ```
 jsondata = { "user": { "username: "user1" } }
-```json
+```
 
 ```
 type User struct {
@@ -47,7 +47,7 @@ type User struct {
 
 var u User
 was_found, err := Dig(jsondata, "user", &u)
-```go
+```
 
 So far, this isn't doing much for you compared to the normal JsonDecoder other than some nice json path access, lets look at three examples I've run into in the real world.
 
@@ -57,7 +57,7 @@ jsondata_with_obj = { "user": { "username: "user1" } }
 jsondata_with_nil = { "user": null }
 jsondata_with_array = { "user": [{ "username: "user1"}, {"username": "user2"} ] }
 
-```json
+```
 
 
 This is very hard to deal with, because during the decode, you don't know what the type will be, You can choose to decode to `map[string]interface{}` but this is very cumbersome with large Json Documents.
@@ -83,7 +83,7 @@ was_found, err := Dig(jsondata_with_array, "user", &users)
 
 // users == [ User{ Username: "user1" }, User{ Username: "user2"} ]
 
-```go
+```
 
 ## This seems super terrible
 Yes
