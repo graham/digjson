@@ -56,7 +56,6 @@ So far, this isn't doing much for you compared to the normal JsonDecoder other t
 jsondata_with_obj = { "user": { "username": "user1" } }
 jsondata_with_nil = { "user": null }
 jsondata_with_array = { "user": [{ "username": "user1"}, {"username": "user2"} ] }
-
 ```
 
 This is very hard to deal with, because during the decode, you don't know what the type will be, You can choose to decode to `map[string]interface{}` but this is very cumbersome with large Json Documents.
@@ -81,7 +80,6 @@ was_found, err := Dig(jsondata_with_array, "user", &users)
 
 
 // users == [ User{ Username: "user1" }, User{ Username: "user2"} ]
-
 ```
 
 ## This seems super terrible
