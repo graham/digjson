@@ -27,7 +27,7 @@ jsondata = { "user": { "username: "user1" } }
 ```
 
 ```
-var u []string
+var u string
 was_found, err := Dig(jsondata, "user.username", &u)
 ```
 
