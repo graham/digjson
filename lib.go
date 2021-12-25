@@ -1,4 +1,4 @@
-package parsing
+package digjson
 
 import (
 	"encoding/json"
