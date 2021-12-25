@@ -5,7 +5,7 @@ Handling shapechanging json in go.
 There quite a few great libraries for Go when handling JSON, however, handling json that might change shape isn't something those packages handle well. 
 
 ## What do you mean by `json that changes shape`
-Working with APIs that emit JSON is usually easy, however, in some cases, one request might result in a dictionary, another an array, another a nil value. This is very hard to deal with in a typed language like Go. `digjson` attempts to make working with these "changing shapes" a bit easier.
+Working with APIs that emit JSON is usually easy, however, in some cases, a single endpoint might return a dictionary one case, an array in another. This is very hard to deal with in a typed language like Go. `digjson` attempts to make working with these "changing shapes" a bit easier.
 
 ## Goals
 Turn a json path into a reasonable value that you can work with.
