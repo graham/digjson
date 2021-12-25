@@ -53,9 +53,9 @@ So far, this isn't doing much for you compared to the normal JsonDecoder other t
 
 
 ```
-jsondata_with_obj = { "user": { "username: "user1" } }
+jsondata_with_obj = { "user": { "username": "user1" } }
 jsondata_with_nil = { "user": null }
-jsondata_with_array = { "user": [{ "username: "user1"}, {"username": "user2"} ] }
+jsondata_with_array = { "user": [{ "username": "user1"}, {"username": "user2"} ] }
 
 ```
 
