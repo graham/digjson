@@ -25,16 +25,24 @@ func inner_dig(obj map[string]interface{}, rest string) (interface{}, bool) {
 	// Is the value we found a {} or some other type.
 	unboxed, ok := hit.(map[string]interface{})
 
-	if !ok || len(chunks) == 1 {
-		// If we didn't find a {} or we are out of path chunks
-		// return what we have.
-		return hit, true
+	if !ok {
+		if len(chunks) == 1 {
+			// If we didn't find a {} or we are out of path chunks
+			// return what we have.
+			return hit, true
+		} else {
+			return nil, false
+		}
 	} else {
-		// Otherwise keep digging!
-		return inner_dig(unboxed, chunks[1])
+		if len(chunks) == 1 {
+			return unboxed, true
+		} else {
+			// Otherwise keep digging!
+			return inner_dig(unboxed, chunks[1])
+		}
 	}
 
-	// Tthe field we requested doesnt exist
+	// The field we requested doesnt exist
 	// stop digging and return nil
 	return nil, false
 
@@ -160,6 +168,7 @@ func DigStrict(payload []byte, path string, target interface{}) (bool, error) {
 // (was_the_path_found, and error).
 func dig(payload []byte, path string, target interface{}, isStrict bool) (bool, error) {
 	var t map[string]interface{}
+
 	err := json.Unmarshal(payload, &t)
 
 	newval, was_found := inner_dig(t, path)
@@ -233,7 +242,8 @@ func transmute_value_to_target(fromKind reflect.Kind, toKind reflect.Kind, sourc
 		target.SetInt(intValue)
 		return nil
 	} else if fromKind == reflect.Int && toKind == reflect.String {
-		target.SetString(fmt.Sprintf("%d", source.(int64)))
+		target.SetString(fmt.Sprintf("%d", source))
+		return nil
 	}
 
 	return errors.New(fmt.Sprintf("Transmute from %s to %s not supported yet.", fromKind, toKind))

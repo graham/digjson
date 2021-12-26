@@ -1,6 +1,7 @@
 package digjson
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -160,6 +161,71 @@ func TestDigStrict_ConvertFromStringToIntFails(t *testing.T) {
 
 	if was_found != true {
 		t.Errorf("Value should have been found, it wasn't.")
+	}
+
+}
+
+func TestDig_MissingField(t *testing.T) {
+	json_with_string := []byte(`{"a": "1000"}`)
+
+	var value int
+	was_found, err := DigStrict(json_with_string, "a.b.c.d", &value)
+
+	if err != nil {
+		t.Errorf("This shouldn't have returned an error, but it did.")
+	}
+
+	if was_found == true {
+		t.Errorf("Value shouldn't have been found, it was.")
+	}
+
+}
+
+func TestTransmuteValue_StringToInt(t *testing.T) {
+	var value int
+	target := reflect.ValueOf(&value)
+	indr := reflect.Indirect(target)
+
+	err := transmute_value_to_target(reflect.String, reflect.Int, "1234", &indr)
+
+	if err != nil {
+		t.Errorf("This shouldn't return an error")
+	}
+
+	if value != 1234 {
+		t.Errorf("Value was not converted correctly.")
+	}
+}
+
+func TestTransmuteValue_IntToString(t *testing.T) {
+	var value string
+	target := reflect.ValueOf(&value)
+	indr := reflect.Indirect(target)
+
+	var source int = 1234
+
+	err := transmute_value_to_target(reflect.Int, reflect.String, source, &indr)
+
+	if err != nil {
+		t.Errorf("This shouldn't return an error %s", err)
+	}
+
+	if value != "1234" {
+		t.Errorf("Value was not converted correctly. %s", value)
+	}
+}
+
+func TestTransmuteValue_NotSupported(t *testing.T) {
+	var value int
+	target := reflect.ValueOf(&value)
+	indr := reflect.Indirect(target)
+
+	var source float64 = 1234.1234
+
+	err := transmute_value_to_target(reflect.Float64, reflect.Int, source, &indr)
+
+	if err == nil {
+		t.Errorf("This didn't return an error, but it did")
 	}
 
 }
